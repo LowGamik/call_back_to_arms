@@ -14,7 +14,7 @@
 int main(){
     auto engine = std::make_unique<Engine>();
 
-    if(!engine->init("SDL3 Engine", 800, 600)) {
+    if(!engine->init("Finland?", 1080, 720)) {
         std::cerr << "Failed to initialize the engine!" << std::endl;
         return -1;
     }

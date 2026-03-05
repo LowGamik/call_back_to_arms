@@ -22,22 +22,46 @@ bool Engine::init(const char* title, int width, int height) {
         return false;
     }
 
+    this->gameObjects = std::vector<std::unique_ptr<GameObject>>();
+
     isRunning = true;
 
     return true;
 }
 
 void Engine::run(){
+    uint32_t firstTimestamp = SDL_GetTicks();
+    uint32_t currentTimestamp = firstTimestamp;
+    float deltaTime = 0.0f;
+
+    for(auto &obj : gameObjects) {
+        obj->init();
+    }
+
     while (isRunning) {
         while (SDL_PollEvent(&event)) {
+            currentTimestamp = SDL_GetTicks();
+            deltaTime = (currentTimestamp - firstTimestamp) / 1000.0f;
+
             if (event.type == SDL_EVENT_QUIT) {
                 isRunning = false;
+            }
+        }
+
+        for(auto &obj : gameObjects) {
+            if(!obj->update(deltaTime)) {
+                isRunning = false; // in case of needed to stop when certain object condition is met (like hp <= 0)
+                break;
             }
         }
 
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
         SDL_RenderPresent(renderer);
+
+        for(auto &obj : gameObjects) {
+            obj->render();
+        }
     }
 }
 
@@ -51,6 +75,10 @@ void Engine::cleanup() {
         window = nullptr;
     }
     SDL_Quit();
+}
+
+void Engine::addGameObject(std::unique_ptr<GameObject> obj) {
+    gameObjects.push_back(std::move(obj));
 }
 
 Engine::~Engine() {
